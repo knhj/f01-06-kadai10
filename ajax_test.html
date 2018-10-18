@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset=" UTF-8">
+    <title>youtube投稿テスト</title>
+</head>
+
+<body>
+
+    <button id="btn">全投稿データ取得</button>
+    <form action="" method="post" id="post_form">
+        <div>名前：<input type="text" id="name" name="name" placeholder="name"><br></div>
+        <div>Email<input type="text" id="email" name="email" placeholder="email"><br></div>
+        <div>youtubeリンク：<textarea name="youtube" id="youtube" cols="100" rows="1" placeholder="youtubeリンク"></textarea><br></div>
+        <button id="send" type="submit">送信</button>
+    </form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        $(window).on('load', function () {
+
+            $('#btn').on('click', function () {
+                $.ajax({
+                    type: 'GET',
+                    url: 'ajax_get.php',
+                    datatype: 'json'
+                }).done(function (response, textStatus, xhr) {
+
+                    console.log(JSON.parse(response));
+                    response = JSON.parse(response);
+                    console.log(response.length / 4);
+                    var ii = 0;
+                    var view = "";
+                    for (var i = 0; i < response.length / 4; i++) {
+                        view += '<div>名前：' + response[ii] + '</div>';
+                        ii++;
+                        view += '<div>Email:' + response[ii] + '</div>';
+                        ii++;
+                        view += '<div>投稿時刻:' + response[ii] + '</div>';
+                        ii++;
+                        view += ' <iframe width="560" height="315" src="https://www.youtube.com/embed/';
+                        view += response[ii];
+                        view += '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+                        ii++;
+                    }
+                    $('body').append(view);
+
+                    // $('body').append(response);
+                }
+                );
+            });
+
+            $('#send').on('click', function () {
+                $('button').attr('disabled', true); //２押しできないようにする
+                var input_value = new FormData($('#post_form')[0]);  //formを全部持ってくる
+                $.ajax({
+                    type: 'post',
+                    url: 'ajax_post.php',
+                    data: input_value,
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false
+                }).done(function (response, textStatus, xhr) {
+                    // alert('done');
+                    // console.log(response);
+                    var view = "";
+                    view += '<div>名前：' + response[0] + '</div>';
+                    view += '<div>Email:' + response[1] + '</div>';
+                    view += '<div>投稿時刻:' + response[3] + '</div>';
+                    view += ' <iframe width="560" height="315" src="https://www.youtube.com/embed/';
+                    view += response[2];
+                    view += '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+
+                    $('body').append(view);
+                }).fail(function (response, textStatus, xhr) {
+                    alert('fail');
+                    return false;
+                }).always(function () {
+                    $('input').val('');
+                    $('textarea').val('');
+                    $('button').attr('disabled', false);
+                });
+            });
+            // ajax構文
+            // $.ajax({
+            //     type: 'post',               //getかpostを指定．データを持ってくる場合はget
+            //     url: '*************.php',   //宛先のphpファイルを指定
+            //     data: {                     //オブジェクト形式で送るとphpファイルで$_data1[]でとれる
+            //         data1:'hoge',
+            //         data2:'fuga'
+            //     },
+            //     dataType: 'json',           //データの種類を指定．html,jsonなど
+            //     processData: false,         //送信のときにエラーが出たらつける
+            //     contentType: false          //送信のときにエラーが出たらつける
+            // }).done(function (response, textStatus, xhr) {
+            //     alert('done');              //成功時の処理
+            //     console.log(response);
+            // }).fail(function (response, textStatus, xhr) {
+            //     alert('fail');              //失敗時の処理
+            // }).always(function () {
+            //     alert('always');            //いつでも実行する処理
+            // });
+        });
+    </script>
+</body>
+
+</html>
